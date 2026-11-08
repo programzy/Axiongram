@@ -179,7 +179,6 @@ PUBLIC
 PRIVATE
     desktop-app::lib_webview
     desktop-app::lib_storage
-    desktop-app::external_ada
     tdesktop::td_lang
     tdesktop::td_ui
 )
