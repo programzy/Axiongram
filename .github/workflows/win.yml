@@ -1,6 +1,7 @@
 name: Windows.
 
 on:
+  workflow_dispatch:
   push:
     # Pushes to the canary or private-ci branches run their own workflows.
     branches-ignore:
@@ -171,7 +172,7 @@ jobs:
       - name: Read configuration matrix.
         shell: bash
         run: |
-          ARTIFACT_NAME="Telegram"
+          ARTIFACT_NAME="Axiongram"
 
           ARCH=""
           if [ -n "${{ matrix.arch }}" ]; then
