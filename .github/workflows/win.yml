@@ -129,6 +129,24 @@ jobs:
           nuget sources Disable -Name "Microsoft Visual Studio Offline Packages"
           nuget sources Add -Source https://api.nuget.org/v3/index.json & exit 0
 
+      - name: Free disk space before build.
+        shell: pwsh
+        run: |
+          # Remove large pre-installed tools to free disk space
+          Remove-Item -Recurse -Force "C:\Android" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\hostedtoolcache\windows\go" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\hostedtoolcache\windows\Ruby" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\dotnet" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\ProgramData\Julia" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\ProgramData\Miniconda3" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Strawberry" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:AGENT_TOOLSDIRECTORY\Java_*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:AGENT_TOOLSDIRECTORY\Python_*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "$env:AGENT_TOOLSDIRECTORY\node" -ErrorAction SilentlyContinue
+          Write-Host "Disk space after cleanup:"
+          Get-PSDrive C | Select-Object Used,Free
+
       - name: ThirdParty cache.
         id: cache-third-party
         uses: actions/cache@v6
