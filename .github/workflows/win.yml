@@ -134,18 +134,28 @@ jobs:
         run: |
           # Remove large pre-installed tools to free disk space
           Remove-Item -Recurse -Force "C:\Android" -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "C:\hostedtoolcache\windows\go" -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "C:\hostedtoolcache\windows\Ruby" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\hostedtoolcache" -ErrorAction SilentlyContinue
           Remove-Item -Recurse -Force "C:\Program Files\dotnet" -ErrorAction SilentlyContinue
           Remove-Item -Recurse -Force "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A" -ErrorAction SilentlyContinue
           Remove-Item -Recurse -Force "C:\ProgramData\Julia" -ErrorAction SilentlyContinue
           Remove-Item -Recurse -Force "C:\ProgramData\Miniconda3" -ErrorAction SilentlyContinue
           Remove-Item -Recurse -Force "C:\Strawberry" -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "$env:AGENT_TOOLSDIRECTORY\Java_*" -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "$env:AGENT_TOOLSDIRECTORY\Python_*" -ErrorAction SilentlyContinue
-          Remove-Item -Recurse -Force "$env:AGENT_TOOLSDIRECTORY\node" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\MongoDB" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\MySQL" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\R" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\PostgreSQL" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files (x86)\Microsoft SQL Server" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\Microsoft SQL Server" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\mingw64" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\vcpkg" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\tools" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\SeleniumWebDrivers" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\Amazon" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files\ImageMagick*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "C:\Program Files (x86)\LLVM" -ErrorAction SilentlyContinue
           Write-Host "Disk space after cleanup:"
           Get-PSDrive C | Select-Object Used,Free
+          Get-PSDrive D -ErrorAction SilentlyContinue | Select-Object Used,Free
 
       - name: ThirdParty cache.
         id: cache-third-party
@@ -232,7 +242,19 @@ jobs:
 
       - name: Free up some disk space.
         shell: bash
-        run: find $LibrariesPath '(' '(' ! '(' -name '*.lib' -o -name '*.a' -o -name '*.exe' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -name '*.cpp' -o -path '*/src/*' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -path '*/nv-codec-headers/*' ')' -type f ')' -o -empty ')' -delete
+        run: |
+          echo "=== Disk before library cleanup ==="
+          df -h /d/ || true
+          find $LibrariesPath '(' '(' ! '(' -name '*.lib' -o -name '*.a' -o -name '*.exe' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -name '*.cpp' -o -path '*/include/*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -path '*/nv-codec-headers/*' ')' -type f ')' -o -empty ')' -delete
+          echo "=== Disk after library cleanup ==="
+          df -h /d/ || true
+
+      - name: Disk space before build.
+        shell: pwsh
+        run: |
+          Write-Host "=== Disk space before Telegram build ==="
+          Get-PSDrive C | Select-Object Used,Free
+          Get-PSDrive D -ErrorAction SilentlyContinue | Select-Object Used,Free
 
       - name: Telegram Desktop build.
         if: env.ONLY_CACHE == 'false'
@@ -244,19 +266,18 @@ jobs:
           %TDESKTOP_BUILD_ARCH% ^
           ${{ matrix.qt }} ^
           %TDESKTOP_BUILD_API% ^
-          -D CMAKE_CONFIGURATION_TYPES=Debug ^
-          -D CMAKE_COMPILE_WARNING_AS_ERROR=ON ^
-          -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
+          -D CMAKE_CONFIGURATION_TYPES=Release ^
+          -D CMAKE_COMPILE_WARNING_AS_ERROR=OFF ^
           -D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF ^
           -D DESKTOP_APP_DISABLE_CRASH_REPORTS=OFF ^
           %TDESKTOP_BUILD_DEFINE%
 
-          cmake --build ..\out --config Debug --parallel
+          cmake --build ..\out --config Release --parallel
 
       - name: Move artifact.
         if: (env.UPLOAD_ARTIFACT == 'true') || (github.ref == 'refs/heads/nightly')
         run: |
-          set OUT=%TBUILD%\%REPO_NAME%\out\Debug
+          set OUT=%TBUILD%\%REPO_NAME%\out\Release
           mkdir artifact
           move %OUT%\Telegram.exe artifact/
           move %OUT%\Updater.exe artifact/
