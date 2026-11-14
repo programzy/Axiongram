@@ -124,7 +124,7 @@ void BuildDataStorageSection(SectionBuilder &builder) {
 	};
 
 	builder.addSkip();
-	builder.addHeader(rpl::single(u"AxionGram — Настройки мода"_q));
+	builder.addSubsectionTitle(rpl::single(u"AxionGram — Настройки мода"_q));
 
 	const auto ghostMode = builder.addCheckbox({
 		.id = u"axiongram/ghost_mode"_q,
