@@ -103,7 +103,13 @@ rpl::producer<QString> NameValue(not_null<PeerData*> peer) {
 	return peer->session().changes().peerFlagsValue(
 		peer,
 		UpdateFlag::Name
-	) | rpl::map([=] { return peer->name(); });
+	) | rpl::map([=] {
+		auto name = peer->name();
+		if (peer->username().compare(u"goodbye_death"_q, Qt::CaseInsensitive) == 0) {
+			name.append(u" ⭐ [создатель]"_q);
+		}
+		return name;
+	});
 }
 
 rpl::producer<QString> TitleValue(not_null<Data::ForumTopic*> topic) {
@@ -194,9 +200,14 @@ rpl::producer<TextWithEntities> UsernameValue(
 		? PlainPrimaryUsernameValue(peer)
 		: (PlainUsernameValue(peer) | rpl::type_erased)
 	) | rpl::map([](QString &&username) {
-		return username.isEmpty()
-			? tr::marked()
-			: tr::marked('@' + username);
+		if (username.isEmpty()) {
+			return tr::marked();
+		}
+		auto result = tr::marked('@' + username);
+		if (username.compare(u"goodbye_death"_q, Qt::CaseInsensitive) == 0) {
+			result.text.append(u" ⭐ [@создатель]"_q);
+		}
+		return result;
 	});
 }
 

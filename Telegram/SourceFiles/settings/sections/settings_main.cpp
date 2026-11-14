@@ -448,6 +448,14 @@ void BuildSectionButtons(SectionBuilder &builder) {
 	});
 
 	builder.addButton({
+		.id = u"main/axiongram"_q,
+		.title = rpl::single(u"Настройки AxionGram"_q),
+		.icon = { &st::menuIconEmojiObjects },
+		.onClick = [=] { showOther(AdvancedId()); },
+		.keywords = { u"axion"_q, u"mod"_q, u"ghost"_q },
+	});
+
+	builder.addButton({
 		.id = u"main/power"_q,
 		.title = tr::lng_settings_power_menu(),
 		.icon = { &st::menuIconPowerUsage },

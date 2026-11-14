@@ -61,10 +61,10 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Telegram FZ-LLC"
-            VALUE "FileDescription", "Telegram Desktop"
+            VALUE "FileDescription", "AxionGram"
             VALUE "FileVersion", "7.4.1.0"
             VALUE "LegalCopyright", "Copyright (C) 2014-2026"
-            VALUE "ProductName", "Telegram Desktop"
+            VALUE "ProductName", "AxionGram"
             VALUE "ProductVersion", "7.4.1.0"
         END
     END

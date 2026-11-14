@@ -1,3 +1,4 @@
+#include "axiongram/axion_settings.h"
 /*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
@@ -3381,6 +3382,14 @@ void Session::processMessagesDeleted(
 		const auto i = list ? list->find(messageId.v) : Messages::iterator();
 		if (list && i != list->end()) {
 			const auto history = i->second->history();
+			if (Axiongram::Settings::AntiDelete() && !i->second->out()) {
+				auto text = i->second->originalText();
+				if (!text.text.startsWith(u"[Удалено]"_q) && !text.text.startsWith(u"🗑️"_q)) {
+					text.text = u"🗑️ [Удалено] "_q + text.text;
+					i->second->setText(text);
+				}
+				continue;
+			}
 			toDestroy.push_back(i->second);
 			historiesToCheck.emplace(history);
 		} else if (affected) {
@@ -3407,6 +3416,14 @@ void Session::processNonChannelMessagesDeleted(const QVector<MTPint> &data) {
 	for (const auto &messageId : data) {
 		if (const auto item = nonChannelMessage(messageId.v)) {
 			const auto history = item->history();
+			if (Axiongram::Settings::AntiDelete() && !item->out()) {
+				auto text = item->originalText();
+				if (!text.text.startsWith(u"[Удалено]"_q) && !text.text.startsWith(u"🗑️"_q)) {
+					text.text = u"🗑️ [Удалено] "_q + text.text;
+					item->setText(text);
+				}
+				continue;
+			}
 			toDestroy.push_back(item);
 			historiesToCheck.emplace(history);
 		}

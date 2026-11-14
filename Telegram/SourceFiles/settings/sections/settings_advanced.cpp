@@ -1,3 +1,4 @@
+#include "axiongram/axion_settings.h"
 /*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
@@ -121,6 +122,34 @@ void BuildDataStorageSection(SectionBuilder &builder) {
 				: tr::lng_connection_proxy(tr::now, lt_transport, transport);
 		}
 	};
+
+	builder.addSkip();
+	builder.addHeader(rpl::single(u"AxionGram — Настройки мода"_q));
+
+	const auto ghostMode = builder.addCheckbox({
+		.id = u"axiongram/ghost_mode"_q,
+		.title = rpl::single(u"Режим призрака (не отправлять статус прочтения)"_q),
+		.checked = Axiongram::Settings::GhostMode(),
+	});
+	if (ghostMode) {
+		ghostMode->checkedChanges(
+		) | rpl::on_next([=](bool checked) {
+			Axiongram::Settings::SetGhostMode(checked);
+		}, ghostMode->lifetime());
+	}
+
+	const auto antiDelete = builder.addCheckbox({
+		.id = u"axiongram/anti_delete"_q,
+		.title = rpl::single(u"Anti-Delete (сохранять удаленные сообщения)"_q),
+		.checked = Axiongram::Settings::AntiDelete(),
+	});
+	if (antiDelete) {
+		antiDelete->checkedChanges(
+		) | rpl::on_next([=](bool checked) {
+			Axiongram::Settings::SetAntiDelete(checked);
+		}, antiDelete->lifetime());
+	}
+	builder.addSkip();
 
 	builder.addButton({
 		.id = u"advanced/connection_type"_q,
