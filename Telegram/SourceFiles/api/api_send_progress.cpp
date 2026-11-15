@@ -1,3 +1,4 @@
+#include "axiongram/axion_settings.h"
 /*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
@@ -64,6 +65,9 @@ void SendProgressManager::update(
 		MsgId topMsgId,
 		SendProgressType type,
 		int progress) {
+	if (Axiongram::Settings::HideTyping()) {
+		return;
+	}
 	const auto peer = history->peer;
 	if (peer->isSelf()
 		|| (peer->isChannel()

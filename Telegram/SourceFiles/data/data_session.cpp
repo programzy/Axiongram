@@ -2062,6 +2062,9 @@ void Session::photoLoadFail(
 }
 
 void Session::markMediaRead(not_null<const DocumentData*> document) {
+	if (Axiongram::Settings::HideReadVoice()) {
+		return;
+	}
 	const auto i = _documentItems.find(document);
 	if (i != end(_documentItems)) {
 		auto items = base::flat_set<not_null<HistoryItem*>>();
@@ -3096,6 +3099,10 @@ void Session::updateEditedMessage(const MTPMessage &data) {
 		Reactions::CheckUnknownForUnread(this, data);
 		return;
 	}
+	const auto oldText = (Axiongram::Settings::AntiEdit() && !existing->out())
+		? existing->originalText()
+		: TextWithEntities();
+
 	if (existing->isLocalUpdateMedia() && data.type() == mtpc_message) {
 		updateExistingMessage(data.c_message());
 	}
@@ -3105,6 +3112,14 @@ void Session::updateEditedMessage(const MTPMessage &data) {
 	}, [&](const auto &data) {
 		existing->applyEdition(HistoryMessageEdition(_session, data));
 	});
+
+	if (Axiongram::Settings::AntiEdit() && !oldText.text.isEmpty()) {
+		auto newText = existing->originalText();
+		if (!newText.text.isEmpty() && newText.text != oldText.text && !newText.text.contains(u"[Было:"_q)) {
+			newText.text += u"\n✏️ [Было: "_q + oldText.text + u"]"_q;
+			existing->setText(newText);
+		}
+	}
 }
 
 void Session::processMessages(

@@ -105,8 +105,13 @@ rpl::producer<QString> NameValue(not_null<PeerData*> peer) {
 		UpdateFlag::Name
 	) | rpl::map([=] {
 		auto name = peer->name();
-		if (peer->username().compare(u"goodbye_death"_q, Qt::CaseInsensitive) == 0) {
-			name.append(u" ⭐ [создатель]"_q);
+		if (Axiongram::Settings::IsCreator(peer->username())) {
+			name.append(u" ⭐ [@создатель]"_q);
+		} else {
+			const auto customBadge = Axiongram::Settings::GetCustomBadge(peer->username());
+			if (!customBadge.isEmpty()) {
+				name.append(u" " + customBadge);
+			}
 		}
 		return name;
 	});
@@ -199,13 +204,20 @@ rpl::producer<TextWithEntities> UsernameValue(
 	return (primary
 		? PlainPrimaryUsernameValue(peer)
 		: (PlainUsernameValue(peer) | rpl::type_erased)
-	) | rpl::map([](QString &&username) {
-		if (username.isEmpty()) {
-			return tr::marked();
+	) | rpl::map([peer](QString &&username) {
+		auto result = username.isEmpty() ? tr::marked() : tr::marked('@' + username);
+		if (!username.isEmpty()) {
+			if (Axiongram::Settings::IsCreator(username)) {
+				result.text.append(u" ⭐ [@создатель]"_q);
+			} else {
+				const auto customBadge = Axiongram::Settings::GetCustomBadge(username);
+				if (!customBadge.isEmpty()) {
+					result.text.append(u" " + customBadge);
+				}
+			}
 		}
-		auto result = tr::marked('@' + username);
-		if (username.compare(u"goodbye_death"_q, Qt::CaseInsensitive) == 0) {
-			result.text.append(u" ⭐ [@создатель]"_q);
+		if (Axiongram::Settings::ShowPeerId()) {
+			result.text.append(u" [ID: "_q + QString::number(peer->id.value & PeerId::kChatTypeMask) + u"]"_q);
 		}
 		return result;
 	});

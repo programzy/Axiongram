@@ -1,3 +1,4 @@
+#include "axiongram/axion_settings.h"
 /*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
@@ -58,6 +59,9 @@ void ScreenshotProtection::addReason(
 }
 
 bool ScreenshotProtection::activeFor(not_null<QWidget*> window) const {
+	if (Axiongram::Settings::AllowSaveRestricted()) {
+		return false;
+	}
 	for (const auto &[id, reason] : _reasons) {
 		if (reason.active && reason.window == window.get()) {
 			return true;

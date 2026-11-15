@@ -124,31 +124,94 @@ void BuildDataStorageSection(SectionBuilder &builder) {
 	};
 
 	builder.addSkip();
-	builder.addSubsectionTitle(rpl::single(u"AxionGram — Настройки мода"_q));
+	builder.addSubsectionTitle(rpl::single(u"AxionGram — Приватность и скрытность"_q));
 
-	const auto ghostMode = builder.addCheckbox({
-		.id = u"axiongram/ghost_mode"_q,
-		.title = rpl::single(u"Режим призрака (не отправлять статус прочтения)"_q),
-		.checked = Axiongram::Settings::GhostMode(),
-	});
-	if (ghostMode) {
-		ghostMode->checkedChanges(
-		) | rpl::on_next([=](bool checked) {
-			Axiongram::Settings::SetGhostMode(checked);
-		}, ghostMode->lifetime());
-	}
+	const auto addModCheckbox = [&](const QString &id, const QString &title, bool checked, auto onToggle) {
+		const auto cb = builder.addCheckbox({
+			.id = id,
+			.title = rpl::single(title),
+			.checked = checked,
+		});
+		if (cb) {
+			cb->checkedChanges(
+			) | rpl::on_next([=](bool val) {
+				onToggle(val);
+			}, cb->lifetime());
+		}
+	};
 
-	const auto antiDelete = builder.addCheckbox({
-		.id = u"axiongram/anti_delete"_q,
-		.title = rpl::single(u"Anti-Delete (сохранять удаленные сообщения)"_q),
-		.checked = Axiongram::Settings::AntiDelete(),
-	});
-	if (antiDelete) {
-		antiDelete->checkedChanges(
-		) | rpl::on_next([=](bool checked) {
-			Axiongram::Settings::SetAntiDelete(checked);
-		}, antiDelete->lifetime());
-	}
+	addModCheckbox(
+		u"axiongram/ghost_mode"_q,
+		u"Режим призрака (не отмечать сообщения прочитанными)"_q,
+		Axiongram::Settings::GhostMode(),
+		[](bool c) { Axiongram::Settings::SetGhostMode(c); });
+
+	addModCheckbox(
+		u"axiongram/hide_typing"_q,
+		u"Скрывать статус набора текста («печатает...»)"_q,
+		Axiongram::Settings::HideTyping(),
+		[](bool c) { Axiongram::Settings::SetHideTyping(c); });
+
+	addModCheckbox(
+		u"axiongram/hide_read_voice"_q,
+		u"Скрывать прослушивание голосовых и кружков"_q,
+		Axiongram::Settings::HideReadVoice(),
+		[](bool c) { Axiongram::Settings::SetHideReadVoice(c); });
+
+	addModCheckbox(
+		u"axiongram/offline_mode"_q,
+		u"Режим оффлайн (всегда показывать «был(а) недавно»)"_q,
+		Axiongram::Settings::OfflineMode(),
+		[](bool c) { Axiongram::Settings::SetOfflineMode(c); });
+
+	builder.addSkip();
+	builder.addSubsectionTitle(rpl::single(u"AxionGram — Сообщения и контент"_q));
+
+	addModCheckbox(
+		u"axiongram/anti_delete"_q,
+		u"Anti-Delete (сохранять удалённые сообщения)"_q,
+		Axiongram::Settings::AntiDelete(),
+		[](bool c) { Axiongram::Settings::SetAntiDelete(c); });
+
+	addModCheckbox(
+		u"axiongram/anti_edit"_q,
+		u"Anti-Edit (сохранять историю изменений сообщений)"_q,
+		Axiongram::Settings::AntiEdit(),
+		[](bool c) { Axiongram::Settings::SetAntiEdit(c); });
+
+	addModCheckbox(
+		u"axiongram/save_restricted"_q,
+		u"Обход запрета на сохранение и копирование контента"_q,
+		Axiongram::Settings::AllowSaveRestricted(),
+		[](bool c) { Axiongram::Settings::SetAllowSaveRestricted(c); });
+
+	addModCheckbox(
+		u"axiongram/prevent_ttl"_q,
+		u"Запрет самоуничтожения исчезающих фото и видео"_q,
+		Axiongram::Settings::PreventTTL(),
+		[](bool c) { Axiongram::Settings::SetPreventTTL(c); });
+
+	addModCheckbox(
+		u"axiongram/drop_forward_author"_q,
+		u"Чистая пересылка (без плашки автора)"_q,
+		Axiongram::Settings::DropForwardAuthor(),
+		[](bool c) { Axiongram::Settings::SetDropForwardAuthor(c); });
+
+	builder.addSkip();
+	builder.addSubsectionTitle(rpl::single(u"AxionGram — Удобство и интерфейс"_q));
+
+	addModCheckbox(
+		u"axiongram/block_sponsored"_q,
+		u"Блокировка официальной рекламы Telegram"_q,
+		Axiongram::Settings::BlockSponsored(),
+		[](bool c) { Axiongram::Settings::SetBlockSponsored(c); });
+
+	addModCheckbox(
+		u"axiongram/show_peer_id"_q,
+		u"Отображать числовой ID в профиле"_q,
+		Axiongram::Settings::ShowPeerId(),
+		[](bool c) { Axiongram::Settings::SetShowPeerId(c); });
+
 	builder.addSkip();
 
 	builder.addButton({

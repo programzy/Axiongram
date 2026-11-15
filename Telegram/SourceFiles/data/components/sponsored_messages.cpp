@@ -1,3 +1,4 @@
+#include "axiongram/axion_settings.h"
 /*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
@@ -103,6 +104,9 @@ void SponsoredMessages::clearOldRequests() {
 
 SponsoredMessages::AppendResult SponsoredMessages::append(
 		not_null<History*> history) {
+	if (Axiongram::Settings::BlockSponsored()) {
+		return SponsoredMessages::AppendResult::None;
+	}
 	if (isTopBarFor(history)) {
 		return SponsoredMessages::AppendResult::None;
 	}
@@ -302,6 +306,9 @@ HistoryItem *SponsoredMessages::injectItem(
 }
 
 bool SponsoredMessages::canHaveFor(not_null<History*> history) const {
+	if (Axiongram::Settings::BlockSponsored()) {
+		return false;
+	}
 	if (history->peer->isChannel()) {
 		return true;
 	} else if (const auto user = history->peer->asUser()) {
@@ -311,6 +318,9 @@ bool SponsoredMessages::canHaveFor(not_null<History*> history) const {
 }
 
 bool SponsoredMessages::canHaveFor(not_null<HistoryItem*> item) const {
+	if (Axiongram::Settings::BlockSponsored()) {
+		return false;
+	}
 	return item->history()->peer->isBroadcast()
 		&& item->isRegular();
 }

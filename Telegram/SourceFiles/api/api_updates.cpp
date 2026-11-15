@@ -1,3 +1,4 @@
+#include "axiongram/axion_settings.h"
 /*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
@@ -1002,6 +1003,9 @@ void Updates::updateOnline(crl::time lastNonIdleTime, bool gotOtherOffline) {
 
 	const auto &config = _session->serverConfig();
 	bool isOnline = Core::App().hasActiveWindow(&session());
+	if (Axiongram::Settings::OfflineMode()) {
+		isOnline = false;
+	}
 	int updateIn = config.onlineUpdatePeriod;
 	Assert(updateIn >= 0);
 	if (isOnline) {

@@ -1,3 +1,4 @@
+#include "axiongram/axion_settings.h"
 /*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
@@ -3515,10 +3516,16 @@ bool HistoryItem::canStopPoll() const {
 }
 
 bool HistoryItem::forbidsForward() const {
+	if (Axiongram::Settings::AllowSaveRestricted()) {
+		return false;
+	}
 	return (_flags & MessageFlag::NoForwards);
 }
 
 bool HistoryItem::forbidsSaving() const {
+	if (Axiongram::Settings::AllowSaveRestricted()) {
+		return false;
+	}
 	if (forbidsForward()) {
 		return true;
 	} else if (_media && _media->ttlSeconds()) {
@@ -4092,6 +4099,9 @@ Data::MessagePosition HistoryItem::position() const {
 }
 
 bool HistoryItem::computeDropForwardedInfo() const {
+	if (Axiongram::Settings::DropForwardAuthor()) {
+		return true;
+	}
 	const auto media = this->media();
 	return (media && media->dropForwardedInfo())
 		|| (_history->peer->isSelf()
@@ -4513,6 +4523,9 @@ bool HistoryItem::canUpdateDate() const {
 }
 
 void HistoryItem::applyTTL(TimeId destroyAt) {
+	if (Axiongram::Settings::PreventTTL()) {
+		return;
+	}
 	const auto previousDestroyAt = std::exchange(_ttlDestroyAt, destroyAt);
 	if (previousDestroyAt) {
 		_history->owner().unregisterMessageTTL(previousDestroyAt, this);
@@ -8444,6 +8457,9 @@ void HistoryItem::setSelfDestruct(
 }
 
 void HistoryItem::armMediaDestroy(TimeId destroyAt) {
+	if (Axiongram::Settings::PreventTTL()) {
+		return;
+	}
 	Expects(destroyAt > 0);
 
 	const auto selfdestruct = Get<HistoryServiceSelfDestruct>();
